@@ -74,9 +74,59 @@ WHERE NoteName LIKE '%o%';
 Select * From Notebooks 
 Where Exists(select * from Brands 
 where Id=Notebooks.BrandsId and [Name] like '%a%')
+select * from Brands 
+where  [Name] like '%a%'
+
 
 Select * From Notebooks  where 1000>price and price>500
 
 Select * From Phones  where price between 500 and 1000
 
 
+SELECT distinct Brands.Name, COUNT(*) as 'ALL EXIST' FROM Notebooks 
+JOIN Brands ON Notebooks.BrandsId = Brands.Id 
+GROUP BY Brands.Name;
+
+SELECT NoteName AS ProductName, Price, Name AS Brand
+FROM Notebooks 
+JOIN Brands  ON Notebooks.BrandsId = Brands.Id
+
+UNION
+
+SELECT PhoneName AS ProductName, Price, [Name] AS Brand
+FROM Phones 
+JOIN Brands  ON Phones.BrandsId=Brands.Id
+
+select distinct Brands.Name as 'BrandsName',sum( Price) as 'Total Price',count(*) as 'ProdoctCount' from Notebooks
+JOIN Brands ON Notebooks.BrandsId = Brands.Id 
+group by Brands.Name
+
+select  products.Id, products.Price, products.NoteName 'Product Name' , Brands.Name 'Brand'
+from 
+(select n.Id, n.NoteName, n.Price, n.BrandsId from Notebooks n
+union 
+select p.ID, p.PhoneName, p.Price ,p.BrandsId from Phones p) products
+join Brands on products.BrandsId=Brands.Id 
+
+create procedure usp_update @price float,@id int
+as 
+update Notebooks
+set Price=@price
+where Id=@id
+
+execute  usp_update 200,4
+
+select * from Notebooks
+
+create function dbo.calculate (@basePrice float, @discount float)
+returns float
+as
+begin
+declare @price float
+Set @Price=@basePrice - (@basePrice* Isnull(@discount,0) /100)
+return @Price
+End
+
+ update Phones
+ set price=dbo.calculate(price,15)
+ select * from Phones
